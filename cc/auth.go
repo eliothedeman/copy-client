@@ -1,17 +1,61 @@
 package cc
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/mrjones/oauth"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
+// AuthConfig holds basic OAuth information
 type AuthConfig struct {
-	ConsumerKey, ConsumerSecret, VerCode string
+	ConsumerKey    string `json:"consumerKey"`
+	ConsumerSecret string `json:"consumerSecret"`
+	VerCode        string `json:"verificationCode"`
 }
+
+// Cache writes an AuthConfig to disk
+func (a *AuthConfig) Cache(fileName string) error {
+	f, err := os.Create(fileName)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	b, err := json.Marshal(a)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	_, err = f.Write()
+	if err != nil {
+		log.Println(err)
+	}
+	return f.Close()
+}
+
+// Load reads an AuthConfig from disk
+func (a *AuthConfig) Load(fileName string) error {
+	f, err := os.Open(fileName)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	b, err := ioutil.ReadAll(f)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	return json.Unmarshal(b, a)
+
+}
+
+// Auth is a Requester that performes an OAuth request
 type Auth struct {
-	Config *AuthConfig
+	CacheFile string
+	Config    *AuthConfig
 }
 
 // Get an http client which has been authorized by copy
@@ -31,7 +75,6 @@ func (a *Auth) Do() (*http.Client, error) {
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		fmt.Println("(1) Go to: " + url)
 		fmt.Println("(2) Grant access, you should get back a verification code.")
 		fmt.Println("(3) Run the program again with command line argument -code $AUTHCODE")
