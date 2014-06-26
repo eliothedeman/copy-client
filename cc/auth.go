@@ -79,7 +79,7 @@ func (a *Auth) Do() (*http.Client, error) {
 			a.Config.VerCode = tmpCache.VerCode
 		}
 		// Cache the new settings
-		err := a.Config.Cache(a.CacheFile)
+		err = a.Config.Cache(a.CacheFile)
 		if err != nil {
 			log.Println(err)
 		}
@@ -93,7 +93,7 @@ func (a *Auth) Do() (*http.Client, error) {
 			AccessTokenUrl:    "https://api.copy.com/oauth/access",
 		},
 	)
-	// If a verification code has not been supplied, request it from the browser and kill the app
+	// If a verification code has not been supplied, request it from the browser and return.
 	if a.Config.VerCode == "" {
 		_, url, err := c.GetRequestTokenAndUrl("oob")
 		if err != nil {

@@ -1,6 +1,6 @@
 package cc
 
 // Response is the generic representation of a response from the copy api
-type Response interface {
+type Responder interface {
 	String() string
 }
